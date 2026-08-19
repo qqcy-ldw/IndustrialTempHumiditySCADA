@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="xbd.CommunicationLib/xbd.CommunicationLib.csproj" Id="09ce4a00-cd39-4f2d-b888-a20c7f3b5358" />
+  <Project Path="xbd.ControlLib/xbd.ControlLib.csproj" Id="d95ed733-cf03-4636-a414-3882d3fa8cab" />
+  <Project Path="xbd.NodeSetting/xbd.NodeSetting.csproj" Id="10087071-e0d6-46c7-9f39-a480e911fc6d" />
+  <Project Path="xbd.WarehouseTHBLL/xbd.WarehouseTHBLL.csproj" Id="80b48f1b-f0da-417a-a88f-d737047f6175" />
+  <Project Path="xbd.WarehouseTHDAL/xbd.WarehouseTHDAL.csproj" Id="e21b3dae-0c47-4461-ba0e-878645f0f7d7" />
+  <Project Path="xbd.WarehouseTHModels/xbd.WarehouseTHModels.csproj" Id="78f7854b-a005-4bb5-a04e-3798de6cfefa" />
+  <Project Path="xbd.WarehouseTHPro/xbd.WarehouseTHPro.csproj" />
+  <Project Path="xbd.WarehouseTHUtils/xbd.WarehouseTHUtils.csproj" Id="b61dd113-e0c2-4236-9806-1b4aa512ca72" />
+</Solution>

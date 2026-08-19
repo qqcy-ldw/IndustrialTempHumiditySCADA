@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\xbd.WarehouseTHDAL\xbd.WarehouseTHDAL.csproj" />
+    <ProjectReference Include="..\xbd.WarehouseTHModels\xbd.WarehouseTHModels.csproj" />
+    <ProjectReference Include="..\xbd.WarehouseTHUtils\xbd.WarehouseTHUtils.csproj" />
+  </ItemGroup>
+
+</Project>
