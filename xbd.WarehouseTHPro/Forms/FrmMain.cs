@@ -29,7 +29,7 @@ namespace xbd.WarehouseTHPro
                     btn.Click += MenuButton_Click;
             }
 
-            // TODO 以后在这里补充用户登录场景
+            // TODO: 以后在这里补充用户登录场景
             ShowPage("集中监控");
         }
         private void FrmMain_Load(object sender, EventArgs e)

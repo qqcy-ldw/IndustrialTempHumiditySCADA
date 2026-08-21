@@ -55,37 +55,6 @@ namespace modbus.CommunicationLibl.Library
         public async Task<OperateResult<bool[]>> ReadCoilsAsync(ushort start, ushort length, byte slaveId = 1)
         {
             throw new NotImplementedException();
-            //// 1、拼接报文（同步，不涉及IO，直接写）
-            //List<byte> sendCommand = new List<byte>();
-            //sendCommand.Add(slaveId);
-            //sendCommand.Add(0x01);
-            //SplitUshortToBigEndian(start, out byte startHigh, out byte startLow);
-            //sendCommand.Add(startHigh);
-            //sendCommand.Add(startLow);
-            //SplitUshortToBigEndian(length, out byte lengthHigh, out byte lengthLow);
-            //sendCommand.Add(lengthHigh);
-            //sendCommand.Add(lengthLow);
-            //sendCommand.AddRange(CRCHelper.Calculate(sendCommand.ToArray()));
-
-            //// 2、异步发送接收（关键变化）
-            //var result = await SendAndReceiveAsync(sendCommand.ToArray());
-            //if (!result.IsSuccess)
-            //{
-            //    return OperateResult.CreateFailResult<bool[]>(result.Message);
-            //}
-
-            //// 3、解析响应数据（同步，不涉及IO，直接写）
-            //bool crcValid = CRCHelper.Verify(result.Content);
-            //if (!crcValid)
-            //{
-            //    return OperateResult.CreateFailResult<bool[]>("CRC校验失败" + result.Content);
-            //}
-
-            //int byteLength = length % 8 == 0 ? length / 8 : length / 8 + 1;
-            //byte[] coilData = result.Content.Skip(3).Take(byteLength).ToArray();
-            //return OperateResult.CreateSuccessResult(
-            //    BitLib.GetBitArrayFromByteArray(coilData, length)
-            //    );
         }
 
         public OperateResult<byte[]> ReadHoldingRegisters(ushort start, ushort length, byte slaveId = 1)

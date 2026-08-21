@@ -1,5 +1,6 @@
-﻿using Microsoft.VisualBasic;
+using Microsoft.VisualBasic;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -34,5 +35,16 @@ namespace xbd.NodeSetting.Base
         /// 取消线程标识位
         /// </summary>
         public CancellationTokenSource cts;
+
+        /// <summary>
+        /// 第一次连接标识符
+        /// </summary>
+        public bool FirstConnectSign;
+
+        /// <summary>
+        /// 变量实时值缓存（线程安全）：Key=变量名(VarName)，Value=最近一次通讯成功算出来的最终值
+        /// 用于 UI 层直接取数显示，和通讯层解耦；后台通讯线程写、UI 主线程读都安全
+        /// </summary>
+        public ConcurrentDictionary<string, object> CurrentValue { get; } = new ConcurrentDictionary<string, object>();
     }
 }
