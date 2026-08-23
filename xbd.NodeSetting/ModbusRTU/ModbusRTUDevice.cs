@@ -252,7 +252,7 @@ namespace xbd.NodeSetting.ModbusRTU
                         }
                         item.VarValue = GetMigrationValue(item.VarValue, item.Scale, item.Offset).Content;
                         // 变量解析换算完成 → 写入全局实时值缓存（供 UI 层直接取数显示）
-                        UpdateValue(item);
+                        UpdateVariable(item);
                     }
                     catch
                     {
