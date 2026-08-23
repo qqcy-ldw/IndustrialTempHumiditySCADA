@@ -33,9 +33,6 @@ public class SerialDeviceBase
     /// </summary>
     private int FrameGapTime = 50;
 
-    // 总超时时间
-    private int ReceiveTimeOut = 3000;
-
     /// <summary>
     /// 打开串口
     /// </summary>
@@ -94,7 +91,7 @@ public class SerialDeviceBase
     /// 发送数据并接收数据，返回原始的字节数据
     /// </summary>
     /// <param name="sendBytes">要发送的字节数组</param>
-    /// <param name="timeoutMs">超时时间（毫秒）</param>
+    /// <param name="timeoutMs">总超时时间（毫秒）</param>
     /// <returns></returns>
     public OperateResult<byte[]> SendAndReceive(byte[] sendBytes, int timeoutMs = 3000)
     {
