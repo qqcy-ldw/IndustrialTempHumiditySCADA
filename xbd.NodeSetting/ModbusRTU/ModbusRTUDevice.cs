@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -49,10 +49,6 @@ namespace xbd.NodeSetting.ModbusRTU
 
         // 定义字典存储每个组的最后重试时间
         private Dictionary<ModbusRTUGroup, DateTime> _retrySchedule = new();
-        /// <summary>
-        /// 计时器
-        /// </summary>
-        //public Stopwatch StopWatch;
 
         /// <summary>
         /// 执行周期（MS）
@@ -103,7 +99,7 @@ namespace xbd.NodeSetting.ModbusRTU
                     // 如果所有的组数据读取失败并且端口号不存在断线重连
                     if (GroupList.Where(c => c.IsOK).Count() == GroupList.Count())
                     {
-                        if (!GetPorts.GetPortNames().Contains(PortName))
+                        if (!SerialPort.GetPortNames().Contains(PortName))
                         {
                             IsConnected = false;
                         }
@@ -120,7 +116,7 @@ namespace xbd.NodeSetting.ModbusRTU
         }
 
         /// <summary>
-        /// 当个通讯组读取（sheet名称）
+        /// 单个通讯组读取（sheet名称）
         /// </summary>
         /// <param name="mpg"></param>
         private bool GetGroupValue(ModbusRTUGroup mpg)
@@ -153,7 +149,8 @@ namespace xbd.NodeSetting.ModbusRTU
                 // 校验：线圈类看 cResult，寄存器类看 rResult
                 bool ok = (cResult != null && cResult.IsSuccess && cResult.Content.Length == mpg.Length)
                        || (rResult != null && rResult.IsSuccess && rResult.Content.Length == mpg.Length * 2);
-                if (!ok) continue;   // 读失败，重试下一轮
+                // 读失败，读取下一轮
+                if (!ok) continue;  
 
                 // 遍历变量解析（单个变量解析失败跳过，不影响其他变量）
                 foreach (var item in mpg.VariableList)
@@ -170,7 +167,6 @@ namespace xbd.NodeSetting.ModbusRTU
                         //对应寄存器范围 100~109；Excel 点位配置的变量地址 regAddr = 102，在本次读取返回的寄存器数组中，
                         //下标为 `102 - 100 = 2`，即该点位对应返回数组中下标 2 的元素。
                         int offset = regAddr - mpg.Start;
-
                         int regCount = item.DataType switch
                         {
                             DataType.Float or DataType.Int or DataType.UInt => 2,

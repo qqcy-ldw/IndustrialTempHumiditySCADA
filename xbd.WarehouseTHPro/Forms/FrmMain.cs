@@ -1,22 +1,20 @@
+using System.Reflection.Emit;
 using xbd.NodeSetting.Common;
+using xbd.NodeSetting.ModbusRTU;
 
 namespace xbd.WarehouseTHPro
 {
     public partial class FrmMain : Form
     {
-        /// <summary>已创建的页面缓存：标题 → 窗体</summary>
+        /// <summary>固定页：常驻内存，切走只隐藏不销毁</summary>
+        private readonly HashSet<string> _fixedPages = new() { "集中监控", "实时趋势" };
+
+        /// <summary>已创建的固定页缓存：标题 → 窗体</summary>
         private readonly Dictionary<string, Form> _pages = new();
 
-        private readonly Dictionary<string, bool> _formDict = new()
-        {
-            {"集中监控",  true},
-            {"实时趋势",  true},
-            {"参数配置",  false},
-            {"历史趋势",  false},
-            {"报警记录",  false},
-            {"数据报表",  false},
-            {"用户管理",  false},
-        };
+        /// <summary>当前显示的普通页（同一时间最多一个）</summary>
+        private Form? _currentNormalPage = null;
+        private string? _currentNormalTitle = null;
 
         public FrmMain()
         {
@@ -29,27 +27,15 @@ namespace xbd.WarehouseTHPro
                     btn.Click += MenuButton_Click;
             }
 
-            // TODO: 以后在这里补充用户登录场景
+            // 固定页启动即创建
+            foreach (var title in _fixedPages)
+                ShowPage(title);
+
+            // 启动默认显示「集中监控」首页
             ShowPage("集中监控");
         }
-        private void FrmMain_Load(object sender, EventArgs e)
-        {
-            this.Load += FrmMain_Load;
-            string configPath = Path.Combine(
-    @"D:\.netStudy\winforms\温湿度监控系统\xbd.WarehouseTHPro\xbd.WarehouseTHPro",
-    "Config");
-            var result = ModbusRTUCFG.LoadDevice(configPath);
-            if (result.IsSuccess)
-            {
-                var List = result.Content;
-            }
-            else
-            {
-                MessageBox.Show(result.Message);
-            }
-        }
 
-        /// <summary>根据标题创建对应的窗体（每个页面第一次打开时调用）</summary>
+        /// <summary>根据标题创建对应的窗体</summary>
         private static Form? CreatePage(string title)
         {
             switch (title)
@@ -61,7 +47,7 @@ namespace xbd.WarehouseTHPro
                 case "报警记录": return new FrmAlarmRecord();
                 case "数据报表": return new FrmDataReport();
                 case "用户管理": return new FrmUserManage();
-                default: return null;   // 未知标题
+                default: return null;
             }
         }
 
@@ -82,49 +68,96 @@ namespace xbd.WarehouseTHPro
             }
         }
 
-        /// <summary>打开页面：第一次创建并嵌入 pnlContent，之后只切换显示</summary>
+        /// <summary>切换页面：固定页常驻复用，普通页切走即销毁</summary>
         private void ShowPage(string title)
         {
-            //普通窗体： 还没创建过 → 先创建
-            if (!_pages.TryGetValue(title, out var form))
+            if (_fixedPages.Contains(title))
             {
-                form = CreatePage(title);
+                // ===== 固定页：第一次创建，之后永远复用同一个实例 =====
+                if (!_pages.TryGetValue(title, out var form))
+                {
+                    form = CreatePage(title);
+                    if (form is null) return;
+
+                    form.TopLevel = false;
+                    form.FormBorderStyle = FormBorderStyle.None;
+                    form.Dock = DockStyle.Fill;
+
+                    _pages[title] = form;
+                    pnlContent.Controls.Add(form);
+                }
+                // 销毁当前普通页（普通页和固定页不共存）
+                CloseNormalPage();   
+                // 只有目标固定页可见
+                foreach (var c in _pages)
+                    c.Value.Visible = (c.Value == form);
+
+                form.BringToFront();
+            }
+            else
+            {
+                // ===== 普通页：每次切换都新建，旧页销毁释放 =====
+                if (_currentNormalTitle == title) return;   // 重复点击当前页不重建
+
+                CloseNormalPage();   // 先销毁旧普通页
+
+                var form = CreatePage(title);
                 if (form is null) return;
 
-                //false: 将窗体降级为普通控件，允许嵌入Panel等容器，不再作为独立弹窗
-                //true（默认）:独立 Windows 窗口，可以弹窗，不能赋值给 Parent
                 form.TopLevel = false;
                 form.FormBorderStyle = FormBorderStyle.None;
                 form.Dock = DockStyle.Fill;
 
-                List<string> fixedKeys = _formDict
-                    .Where(pair => pair.Value == false)  //筛选：sFixed=false
-                    .Select(pair => pair.Key)   //投影：只取出key(窗体名称)
-                    .ToList();
-                for (int i = 0; i < _pages.Count; i++)
-                {
-                    foreach (string item in fixedKeys)
-                    {
-                        if (_pages.Keys.Contains(item))
-                        {
-                            _pages.Remove(item);
-                        }
-                    }
-                }
-                _pages[title] = form;
+                _currentNormalPage = form;
+                _currentNormalTitle = title;
                 pnlContent.Controls.Add(form);
 
-            }
+                // 固定页全部隐藏，只显示普通页
+                foreach (var c in _pages)
+                    c.Value.Visible = false;
 
-            //只有目标窗体可见，其余隐藏（不销毁，后台照常运行）
-            foreach (var c in _pages)
-            {
-                c.Value.Visible = (c.Value == form);
+                form.BringToFront();
+                // 窗体默认 Visible=false，必须手动显示
+                form.Visible = true;
             }
-
-            form.BringToFront();
         }
 
-        
+        /// <summary>销毁当前普通页（Remove + Dispose + 清引用，三步缺一不可）</summary>
+        private void CloseNormalPage()
+        {
+            if (_currentNormalPage is null) return;
+
+            pnlContent.Controls.Remove(_currentNormalPage);   // ① 从面板摘下来
+            _currentNormalPage.Dispose();                     // ② 释放资源（定时器随之停止）
+            _currentNormalPage = null;                        // ③ 清引用
+            _currentNormalTitle = null;
+        }
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            string[] weekDays = { "星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六" };
+            lblSystemTime.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss  ") + weekDays[(int)DateTime.Now.DayOfWeek];
+
+            // 集中监控页刷数据
+            var monitor = (FrmCentralMonitor)_pages["集中监控"];
+            monitor.UpdateMonitor();
+
+            // 实时趋势页跟着追加一个数据点（用的是同一批设备）
+            var trend = (FrmRealtimeTrend)_pages["实时趋势"];
+            trend.AppendPoint(monitor._devices);
+
+
+            ModbusRTUDevice? devA = null;
+            ModbusRTUDevice? devB = null;
+            foreach (var dev in monitor._devices)
+            {
+                if (dev.DeviceName.Contains("A区")) devA = dev;
+                else if (dev.DeviceName.Contains("B区")) devB = dev;
+            }
+            if (devA != null)
+                lblAreaA.Text = $"A区: {(devA.IsConnected ? "串口已连接" : "串口关闭")} | {devA.CommPeriod} ms";
+
+            if (devB != null)
+                lblAreaB.Text = $"B区: {(devB.IsConnected ? "串口已连接" : "串口关闭")} | {devB.CommPeriod} ms";
+        }
     }
 }

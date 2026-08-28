@@ -28,9 +28,9 @@ namespace xbd.WarehouseTHPro
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
             pnlHeader = new Panel();
-            lblAlarmInfo = new Label();
             lblTitle = new Label();
             pbLogo = new PictureBox();
             pnlMenu = new Panel();
@@ -48,6 +48,7 @@ namespace xbd.WarehouseTHPro
             lblSeparator2 = new Label();
             lblAreaB = new Label();
             lblAreaA = new Label();
+            timer1 = new System.Windows.Forms.Timer(components);
             pnlHeader.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pbLogo).BeginInit();
             pnlMenu.SuspendLayout();
@@ -57,7 +58,6 @@ namespace xbd.WarehouseTHPro
             // pnlHeader
             // 
             pnlHeader.BackColor = Color.FromArgb(43, 50, 120);
-            pnlHeader.Controls.Add(lblAlarmInfo);
             pnlHeader.Controls.Add(lblTitle);
             pnlHeader.Controls.Add(pbLogo);
             pnlHeader.Dock = DockStyle.Top;
@@ -66,17 +66,6 @@ namespace xbd.WarehouseTHPro
             pnlHeader.Size = new Size(1622, 81);
             pnlHeader.TabIndex = 0;
             // 
-            // lblAlarmInfo
-            // 
-            lblAlarmInfo.AutoSize = true;
-            lblAlarmInfo.Font = new Font("微软雅黑", 14F, FontStyle.Bold);
-            lblAlarmInfo.ForeColor = Color.Red;
-            lblAlarmInfo.Location = new Point(1119, 26);
-            lblAlarmInfo.Name = "lblAlarmInfo";
-            lblAlarmInfo.Size = new Size(167, 29);
-            lblAlarmInfo.TabIndex = 2;
-            lblAlarmInfo.Text = "实时报警信息";
-            // 
             // lblTitle
             // 
             lblTitle.AutoSize = true;
@@ -84,7 +73,7 @@ namespace xbd.WarehouseTHPro
             lblTitle.ForeColor = Color.White;
             lblTitle.Location = new Point(96, 18);
             lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(476, 41);
+            lblTitle.Size = new Size(428, 45);
             lblTitle.TabIndex = 1;
             lblTitle.Text = "信必达仓储温湿度监控系统";
             // 
@@ -285,7 +274,7 @@ namespace xbd.WarehouseTHPro
             lblSystemTime.ForeColor = Color.White;
             lblSystemTime.Location = new Point(1273, 13);
             lblSystemTime.Name = "lblSystemTime";
-            lblSystemTime.Size = new Size(267, 24);
+            lblSystemTime.Size = new Size(291, 23);
             lblSystemTime.TabIndex = 4;
             lblSystemTime.Text = "系统时间: 2024年09月17日 20:00:00";
             // 
@@ -297,7 +286,7 @@ namespace xbd.WarehouseTHPro
             lblLoginUser.ForeColor = Color.White;
             lblLoginUser.Location = new Point(1105, 13);
             lblLoginUser.Name = "lblLoginUser";
-            lblLoginUser.Size = new Size(126, 24);
+            lblLoginUser.Size = new Size(138, 23);
             lblLoginUser.TabIndex = 3;
             lblLoginUser.Text = "登录用户: 未登录";
             // 
@@ -309,7 +298,7 @@ namespace xbd.WarehouseTHPro
             lblSeparator2.ForeColor = Color.White;
             lblSeparator2.Location = new Point(1239, 13);
             lblSeparator2.Name = "lblSeparator2";
-            lblSeparator2.Size = new Size(26, 24);
+            lblSeparator2.Size = new Size(25, 23);
             lblSeparator2.TabIndex = 2;
             lblSeparator2.Text = " | ";
             // 
@@ -320,7 +309,7 @@ namespace xbd.WarehouseTHPro
             lblAreaB.ForeColor = Color.White;
             lblAreaB.Location = new Point(270, 13);
             lblAreaB.Name = "lblAreaB";
-            lblAreaB.Size = new Size(212, 24);
+            lblAreaB.Size = new Size(204, 23);
             lblAreaB.TabIndex = 1;
             lblAreaB.Text = "B区:  串口关闭  |  000 ms";
             // 
@@ -331,9 +320,15 @@ namespace xbd.WarehouseTHPro
             lblAreaA.ForeColor = Color.White;
             lblAreaA.Location = new Point(26, 13);
             lblAreaA.Name = "lblAreaA";
-            lblAreaA.Size = new Size(212, 24);
+            lblAreaA.Size = new Size(205, 23);
             lblAreaA.TabIndex = 0;
             lblAreaA.Text = "A区:  串口关闭  |  000 ms";
+            // 
+            // timer1
+            // 
+            timer1.Enabled = true;
+            timer1.Interval = 200;
+            timer1.Tick += timer1_Tick;
             // 
             // FrmMain
             // 
@@ -348,7 +343,6 @@ namespace xbd.WarehouseTHPro
             Name = "FrmMain";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "信必达仓储温湿度监控系统";
-            Load += FrmMain_Load;
             pnlHeader.ResumeLayout(false);
             pnlHeader.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pbLogo).EndInit();
@@ -364,7 +358,6 @@ namespace xbd.WarehouseTHPro
         private System.Windows.Forms.Panel pnlHeader;
         private System.Windows.Forms.PictureBox pbLogo;
         private System.Windows.Forms.Label lblTitle;
-        private System.Windows.Forms.Label lblAlarmInfo;
         private System.Windows.Forms.Panel pnlMenu;
         private System.Windows.Forms.Button btnCentralMonitor;
         private System.Windows.Forms.Button btnRealtimeTrend;
@@ -380,5 +373,6 @@ namespace xbd.WarehouseTHPro
         private System.Windows.Forms.Label lblLoginUser;
         private System.Windows.Forms.Label lblSeparator2;
         private System.Windows.Forms.Label lblSystemTime;
+        private System.Windows.Forms.Timer timer1;
     }
 }

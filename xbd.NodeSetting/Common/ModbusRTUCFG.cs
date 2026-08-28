@@ -34,6 +34,8 @@ namespace xbd.NodeSetting.Common
                 //获取该目录下所有的xlsx文件信息
                 foreach (var file in dirInfo.GetFiles("*.xlsx"))
                 {
+                    // 跳过 Excel 打开时产生的临时锁文件
+                    if (file.Name.StartsWith("~$")) continue;
                     // 验证文件名称
                     var device = GetDevice(file.Name.Replace(".xlsx", ""));
                     if (!device.IsSuccess) return OperateResult.CreateFailResult<List<ModbusRTUDevice>>($"{file.Name}：{device.Message}");

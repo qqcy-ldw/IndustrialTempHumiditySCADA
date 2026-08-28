@@ -17,8 +17,6 @@ namespace xbd.WarehouseTHPro
 
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
-            timer1 = new System.Windows.Forms.Timer(components);
             monitor1 = new Monitor();
             monitor2 = new Monitor();
             monitor3 = new Monitor();
@@ -27,14 +25,9 @@ namespace xbd.WarehouseTHPro
             monitor6 = new Monitor();
             SuspendLayout();
             // 
-            // timer1
-            // 
-            timer1.Enabled = true;
-            timer1.Interval = 1000;
-            // 
             // monitor1
             // 
-            monitor1.GroupName = "";
+            monitor1.GroupName = "A01";
             monitor1.HumidityValue = 0;
             monitor1.Location = new Point(15, 13);
             monitor1.Margin = new Padding(4);
@@ -43,10 +36,11 @@ namespace xbd.WarehouseTHPro
             monitor1.TabIndex = 0;
             monitor1.TempValue = 10F;
             monitor1.ZoneName = "仓库分区：A区-01";
+            monitor1.Load += monitor1_Load;
             // 
             // monitor2
             // 
-            monitor2.GroupName = "";
+            monitor2.GroupName = "A02";
             monitor2.HumidityValue = 0;
             monitor2.Location = new Point(483, 13);
             monitor2.Margin = new Padding(4);
@@ -58,7 +52,7 @@ namespace xbd.WarehouseTHPro
             // 
             // monitor3
             // 
-            monitor3.GroupName = "";
+            monitor3.GroupName = "A03";
             monitor3.HumidityValue = 0;
             monitor3.Location = new Point(951, 13);
             monitor3.Margin = new Padding(4);
@@ -70,7 +64,7 @@ namespace xbd.WarehouseTHPro
             // 
             // monitor4
             // 
-            monitor4.GroupName = "仓库分区：A区-01";
+            monitor4.GroupName = "B01";
             monitor4.HumidityValue = 0;
             monitor4.Location = new Point(15, 348);
             monitor4.Margin = new Padding(4);
@@ -82,7 +76,7 @@ namespace xbd.WarehouseTHPro
             // 
             // monitor5
             // 
-            monitor5.GroupName = "仓库分区：A区-01";
+            monitor5.GroupName = "B02";
             monitor5.HumidityValue = 0;
             monitor5.Location = new Point(483, 348);
             monitor5.Margin = new Padding(4);
@@ -94,7 +88,7 @@ namespace xbd.WarehouseTHPro
             // 
             // monitor6
             // 
-            monitor6.GroupName = "仓库分区：A区-01";
+            monitor6.GroupName = "B03";
             monitor6.HumidityValue = 0;
             monitor6.Location = new Point(951, 348);
             monitor6.Margin = new Padding(4);
@@ -124,8 +118,6 @@ namespace xbd.WarehouseTHPro
         }
 
         #endregion
-
-        private System.Windows.Forms.Timer timer1;
         private Monitor monitor1;
         private Monitor monitor2;
         private Monitor monitor3;

@@ -42,7 +42,7 @@ namespace xbd.NodeSetting.Base
         /// <summary>
         /// 第一次连接标识符
         /// </summary>
-        public bool FirstConnectSign;
+        public bool FirstConnectSign = true;
         /// <summary>
         /// 通知事件
         /// </summary>
@@ -67,56 +67,60 @@ namespace xbd.NodeSetting.Base
 
         private void UpdateAlarm(VariableBase variable)
         {
-            if (variable.HAlarm || variable.LAlarm)
-            {
-                float current = 0.0f;
-                if (variable.DataType == DataType.Bool)
-                {
-                    current = (bool)variable.VarValue ? 1.0f : 0.0f;
-                }
-                else
-                {
-                    current = Convert.ToSingle(variable.VarValue);
-                }
+            // 值还没读到（通讯未成功），跳过报警判断，避免 null 拆箱异常
+            if (variable.VarValue is null) return;
 
-                int reuslt = 0;
-                if (variable.HAlarm)
+            if (!variable.HAlarm && !variable.LAlarm) return;
+
+            // 报警比较统一用 float：Bool 按 1/0 处理
+            float current;
+            if (variable.DataType == DataType.Bool)
+            {
+                current = (bool)variable.VarValue ? 1.0f : 0.0f;
+            }
+            else
+            {
+                current = Convert.ToSingle(variable.VarValue);
+            }
+
+            if (variable.HAlarm)
+            {
+                // 高报警：先用"旧缓存"判断上升沿（没超限 → 超限），比较完再更新缓存
+                int result = Compare(current, variable.HAlarmValue, variable.HCacheValue, true);
+                variable.HCacheValue = current;
+
+                if (result != 0)   // 1=触发 或 -1=消除 才发事件；0=无变化不发
                 {
-                    // 高报警
-                    variable.HCacheValue = current;
-                    reuslt = Compare(current, variable.HAlarmValue, variable.HCacheValue, true);
-                    if (reuslt != 1)
+                    OnAlarmEvent(variable, new AlarmEventArgs
                     {
-                        OnAlarmEvent(variable, new AlarmEventArgs
-                        {
-                            DeviceName = this.DeviceName,
-                            VarName = variable.VarName,
-                            CurrentValue = variable.VarValue.ToString(),
-                            AlarmValue = variable.HAlarmValue.ToString(),
-                            AlarmNote = variable.HAlarmNote.ToString(),
-                            IsTriggered = reuslt == 1
-                        });
-                    }
+                        DeviceName = this.DeviceName,
+                        VarName = variable.VarName,
+                        CurrentValue = variable.VarValue.ToString(),
+                        AlarmValue = variable.HAlarmValue.ToString(),
+                        AlarmNote = variable.HAlarmNote ?? "",
+                        IsTriggered = result == 1
+                    });
                 }
-                if (variable.LAlarm)
+            }
+
+            if (variable.LAlarm)
+            {
+                // 低报警：方向与高报警相反（低于限值触发），isPositive 传 false
+                int result = Compare(current, variable.LAlarmValue, variable.LCacheValue, false);
+                variable.LCacheValue = current;
+
+                if (result != 0)
                 {
-                    // 低报警
-                    variable.LCacheValue = current;
-                    reuslt = Compare(current, variable.LAlarmValue, variable.LCacheValue, true);
-                    if (reuslt != 1)
+                    OnAlarmEvent(variable, new AlarmEventArgs
                     {
-                        OnAlarmEvent(variable, new AlarmEventArgs
-                        {
-                            DeviceName = this.DeviceName,
-                            VarName = variable.VarName,
-                            CurrentValue = variable.VarValue.ToString(),
-                            AlarmValue = variable.LAlarmValue.ToString(),
-                            AlarmNote = variable.LAlarmNote.ToString(),
-                            IsTriggered = reuslt == 1
-                        });
-                    }
+                        DeviceName = this.DeviceName,
+                        VarName = variable.VarName,
+                        CurrentValue = variable.VarValue.ToString(),
+                        AlarmValue = variable.LAlarmValue.ToString(),
+                        AlarmNote = variable.LAlarmNote ?? "",
+                        IsTriggered = result == 1
+                    });
                 }
-                
             }
         }
 
