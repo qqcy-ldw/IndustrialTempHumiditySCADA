@@ -8,10 +8,8 @@ namespace xbd.WarehouseTHPro
     public partial class FrmRealtimeTrend : Form
     {
         private readonly List<SeriesInfo> _series = new();
-        // 所有曲线共享的时间轴（点序号）
-        private readonly List<double> _xAxis = new();   
-        // 最多保留 600 个点（1秒1点 = 10分钟窗口）
-        private const int MAX_POINTS = 600;            
+        private readonly List<double> _xAxis = new();   // 所有曲线共享的时间轴（点序号）
+        private const int MAX_POINTS = 600;             // 最多保留 600 个点（1秒1点 = 10分钟窗口）
 
         private int _lastSampleTick = 0;                // 上次取点的时刻（节流用）
 

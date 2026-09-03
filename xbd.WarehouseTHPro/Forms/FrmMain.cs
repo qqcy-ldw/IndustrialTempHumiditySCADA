@@ -159,5 +159,6 @@ namespace xbd.WarehouseTHPro
             if (devB != null)
                 lblAreaB.Text = $"B区: {(devB.IsConnected ? "串口已连接" : "串口关闭")} | {devB.CommPeriod} ms";
         }
+
     }
 }

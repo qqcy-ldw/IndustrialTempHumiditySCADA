@@ -72,6 +72,8 @@ namespace xbd.NodeSetting.ModbusRTU
             {
                 if (IsConnected)
                 {
+                    cts.Cancel();
+
                     Stopwatch StopWatch = Stopwatch.StartNew();
                     foreach (var gp in GroupList)
                     {

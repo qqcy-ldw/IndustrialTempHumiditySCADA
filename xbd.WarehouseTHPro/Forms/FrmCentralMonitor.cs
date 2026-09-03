@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using thinger.DataConvertLib;
 using xbd.NodeSetting.Common;
 using xbd.NodeSetting.ModbusRTU;
+using xbd.WarehouseTHDAL;
 
 namespace xbd.WarehouseTHPro
 {
@@ -13,6 +14,16 @@ namespace xbd.WarehouseTHPro
     {
         public List<ModbusRTUDevice> _devices { get; private set; } = new();
         private bool _loadedOk = false;
+        private readonly THReadingRepository _readingRepository = new();
+
+        /// <summary>上一次保存数据的时间（秒）。</summary>
+        private int _lastSavedSecond = -1;
+
+        /// <summary>
+        /// 当前最新的一批温湿度数据。
+        /// 每次刷新监控界面时都会更新，一秒只保存一次到数据库。
+        /// </summary>
+        private List<THReading> _latestReadings = new();
 
         // 【可按需修改】CurrentValue 的 Key 拼接规则（必须和 Excel 里 VarName 列写法完全一致）
         // 比如 Excel 里写的是「A区_温度」就把下面的 "" 改成 "_"，写的是「A 区 温度」就改空格
@@ -25,14 +36,14 @@ namespace xbd.WarehouseTHPro
         public FrmCentralMonitor()
         {
             InitializeComponent();
+            _readingRepository.Initialize();
             // 窗体关闭时释放所有设备的串口资源，避免串口被占用下次打开失败
             FormClosing += (o, e) => StopAllDevices();
         }
         private void monitor1_Load(object sender, EventArgs e)
         {
-            string configPath = Path.Combine(
-                @"D:\.netStudy\winforms\温湿度监控系统\xbd.WarehouseTHPro\xbd.WarehouseTHPro",
-                "Config");
+            // 配置文件随程序部署到输出目录的 Config 子目录，避免依赖开发机绝对路径
+            string configPath = Path.Combine(AppContext.BaseDirectory, "Config");
 
             var result = ModbusRTUCFG.LoadDevice(configPath);
             if (!result.IsSuccess)
@@ -66,6 +77,9 @@ namespace xbd.WarehouseTHPro
                 // 前置判断：没加载成功/没有设备就直接返回，不做任何无意义遍历
                 if (!_loadedOk || _devices.Count == 0) return;
 
+                var readings = new List<THReading>();
+                DateTime recordedAt = DateTime.Now;
+
                 foreach (var device in _devices)
                 {
                     // 遍历所有 Monitor 分区控件，按 GroupName 和设备里的 Group 做匹配
@@ -76,13 +90,8 @@ namespace xbd.WarehouseTHPro
                         // 这个分区在当前设备里没配置就跳过
                         if (group == null) continue; 
 
-                        // ① 先更新通讯状态（绿/红图标）
+                        // 更新设备状态
                         monitor.IsAvailable = group.IsOK;
-
-                        // ② 通讯正常时，才从 device.CurrentValue 读温度湿度
-                        //    ⚠️ 注意：读的是「device.CurrentValue」（就是上面启动的那个设备对象，
-                        //       它的后台线程一直在写这个字典），不是另外 new 的空对象！
-                        if (!monitor.IsAvailable) continue;
 
                         string tempKey = $"{monitor.GroupName}{KEY_SPLIT}{KEY_TEMP_SUFFIX}";
                         string humidityKey = $"{monitor.GroupName}{KEY_SPLIT}{KEY_HUMIDITY_SUFFIX}";
@@ -91,17 +100,49 @@ namespace xbd.WarehouseTHPro
                         float tempVal = DEFAULT_TEMP;
                         int humidityVal = DEFAULT_HUMIDITY;
 
-                        // ✅ 用 TryGetValue + Convert.ToXXX：
-                        // 1. Key 不存在不抛异常（设备刚启动还没读完第一轮、组这次读失败了都正常）
-                        // 2. 不做强转 float/int，避免 CurrentValue 里存的是 double/ushort/int 任意类型时类型不匹配
-                        if (device.CurrentValue.TryGetValue(tempKey, out var tempObj))
+                        object? temperature = null;
+                        object? humidity = null;
+
+                        if (monitor.IsAvailable && device.CurrentValue.TryGetValue(tempKey, out var tempObj))
+                        {
+                            temperature = tempObj;
                             tempVal = Convert.ToSingle(tempObj);
-                        if (device.CurrentValue.TryGetValue(humidityKey, out var humObj))
+                        }
+
+                        if (monitor.IsAvailable && device.CurrentValue.TryGetValue(humidityKey, out var humObj))
+                        {
+                            humidity = humObj;
                             humidityVal = Convert.ToInt32(humObj);
+                        }
 
                         monitor.TempValue = tempVal;
                         monitor.HumidityValue = humidityVal;
+
+                        readings.Add(new THReading
+                        {
+                            RecordedAt = recordedAt,
+                            DeviceName = device.DeviceName,
+                            ZoneName = monitor.GroupName,
+                            Temperature = temperature == null ? null : Convert.ToDouble(temperature),
+                            Humidity = humidity == null ? null : Convert.ToDouble(humidity),
+                            IsAvailable = monitor.IsAvailable
+                        });
                     }
+                }
+
+                // 保存本次刷新得到的最新温湿度数据。
+                _latestReadings = readings;
+
+                // 获取当前秒数，判断是否已经保存过本秒的数据，避免重复保存。
+                int currentSecond = recordedAt.Second;
+                bool hasSavedThisSecond = currentSecond == _lastSavedSecond;
+
+                if (!hasSavedThisSecond && _latestReadings.Count > 0)
+                {
+                    _lastSavedSecond = currentSecond;
+
+                    // 当前项目每秒最多保存 6 条数据，直接批量插入即可。
+                    _readingRepository.InsertMany(_latestReadings);
                 }
             }
             catch (Exception ex)

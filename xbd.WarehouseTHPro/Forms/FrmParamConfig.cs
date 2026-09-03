@@ -1,7 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Windows.Forms;
+using xbd.NodeSetting.Common;
+using xbd.NodeSetting.ModbusRTU;
 using xbd.WarehouseTHPro.Models;
-using xbd.WarehouseTHUtils;
 
 namespace xbd.WarehouseTHPro
 {
@@ -21,131 +25,105 @@ namespace xbd.WarehouseTHPro
             LoadAll();
         }
 
-        private SerialConfigBundle CollectSerial()
-        {
-            return new SerialConfigBundle
-            {
-                SerialA = new SerialPortParams
-                {
-                    PortName = txtAPort.Text.Trim(),
-                    BaudRate = ParseIntCombo(cboABaud, 9600),
-                    Parity = GetComboText(cboAParity, "None"),
-                    DataBits = ParseIntCombo(cboADataBits, 8),
-                    StopBits = GetComboText(cboAStopBits, "One")
-                },
-                SerialB = new SerialPortParams
-                {
-                    PortName = txtBPort.Text.Trim(),
-                    BaudRate = ParseIntCombo(cboBBaud, 9600),
-                    Parity = GetComboText(cboBParity, "None"),
-                    DataBits = ParseIntCombo(cboBDataBits, 8),
-                    StopBits = GetComboText(cboBStopBits, "One")
-                }
-            };
-        }
-
-        private ThresholdConfigBundle CollectThreshold()
-        {
-            return new ThresholdConfigBundle
-            {
-                ZoneA01 = BuildZone("A01", txtTempA01High, txtTempA01Low, txtHumA01High, txtHumA01Low),
-                ZoneA02 = BuildZone("A02", txtTempA02High, txtTempA02Low, txtHumA02High, txtHumA02Low),
-                ZoneA03 = BuildZone("A03", txtTempA03High, txtTempA03Low, txtHumA03High, txtHumA03Low),
-                ZoneB01 = BuildZone("B01", txtTempB01High, txtTempB01Low, txtHumB01High, txtHumB01Low),
-                ZoneB02 = BuildZone("B02", txtTempB02High, txtTempB02Low, txtHumB02High, txtHumB02Low),
-                ZoneB03 = BuildZone("B03", txtTempB03High, txtTempB03Low, txtHumB03High, txtHumB03Low)
-            };
-        }
-
-        private ZoneThreshold BuildZone(string zone, TextBox tHigh, TextBox tLow, TextBox hHigh, TextBox hLow)
-        {
-            return new ZoneThreshold
-            {
-                ZoneName = zone,
-                TempHigh = ParseDouble(tHigh.Text, 30.0),
-                TempLow = ParseDouble(tLow.Text, 10.0),
-                HumHigh = ParseDouble(hHigh.Text, 80.0),
-                HumLow = ParseDouble(hLow.Text, 30.0)
-            };
-        }
-
         /// <summary>
-        /// 对象 → UI（把配置对象填回真实控件）
-        /// 注意：ComboBox 都是 DropDownList，必须找匹配的 Index 或 Text 赋值
-        /// </summary>
-        /// <param name="cfg"></param>
-        private void ApplySerial(SerialConfigBundle cfg)
-        {
-            if (cfg.SerialA != null)
-            {
-                txtAPort.Text = cfg.SerialA.PortName;
-                SetCombo(cboABaud, cfg.SerialA.BaudRate.ToString(), "9600");
-                SetCombo(cboAParity, cfg.SerialA.Parity, "None");
-                SetCombo(cboADataBits, cfg.SerialA.DataBits.ToString(), "8");
-                SetCombo(cboAStopBits, cfg.SerialA.StopBits, "One");
-            }
-            if (cfg.SerialB != null)
-            {
-                txtBPort.Text = cfg.SerialB.PortName;
-                SetCombo(cboBBaud, cfg.SerialB.BaudRate.ToString(), "9600");
-                SetCombo(cboBParity, cfg.SerialB.Parity, "None");
-                SetCombo(cboBDataBits, cfg.SerialB.DataBits.ToString(), "8");
-                SetCombo(cboBStopBits, cfg.SerialB.StopBits, "One");
-            }
-        }
-
-        private void ApplyThreshold(ThresholdConfigBundle cfg)
-        {
-            ApplyZone(cfg.ZoneA01, txtTempA01High, txtTempA01Low, txtHumA01High, txtHumA01Low);
-            ApplyZone(cfg.ZoneA02, txtTempA02High, txtTempA02Low, txtHumA02High, txtHumA02Low);
-            ApplyZone(cfg.ZoneA03, txtTempA03High, txtTempA03Low, txtHumA03High, txtHumA03Low);
-            ApplyZone(cfg.ZoneB01, txtTempB01High, txtTempB01Low, txtHumB01High, txtHumB01Low);
-            ApplyZone(cfg.ZoneB02, txtTempB02High, txtTempB02Low, txtHumB02High, txtHumB02Low);
-            ApplyZone(cfg.ZoneB03, txtTempB03High, txtTempB03Low, txtHumB03High, txtHumB03Low);
-        }
-
-        private void ApplyZone(ZoneThreshold? z, TextBox tHigh, TextBox tLow, TextBox hHigh, TextBox hLow)
-        {
-            if (z == null) return;
-            tHigh.Text = z.TempHigh.ToString("F1");
-            tLow.Text = z.TempLow.ToString("F1");
-            hHigh.Text = z.HumHigh.ToString("F1");
-            hLow.Text = z.HumLow.ToString("F1");
-        }
-
-        /// <summary>
-        /// 文件保存
+        /// Excel 是唯一配置源，窗体不再把参数保存到 JSON 文件。
         /// </summary>
         private void SaveAll()
         {
-            var serialCfg = CollectSerial();
-            var s1 = ConfigHelper.Save(serialCfg, ConfigHelper.PlcCommConfigPath);
-            if (!s1.IsSuccess)
-            {
-                MessageBox.Show($"串口配置保存失败：{s1.Message}", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var thCfg = CollectThreshold();
-            var s2 = ConfigHelper.Save(thCfg, ConfigHelper.SystemConfigPath);
-            if (!s2.IsSuccess)
-            {
-                MessageBox.Show($"阈值配置保存失败：{s2.Message}", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            MessageBox.Show("参数配置保存成功！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(
+                "当前参数直接读取 Config 文件夹中的 Excel 配置。\r\n请修改对应 Excel 文件后，重新打开本页面或点击取消重新加载。",
+                "提示",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
 
         private void LoadAll()
         {
-            var s = ConfigHelper.Load<SerialConfigBundle>(ConfigHelper.PlcCommConfigPath);
-            if (s.IsSuccess && s.Content != null) ApplySerial(s.Content);
-            // 即使文件不存在，也保证下拉框有默认选中（默认 Index）
-            else ApplySerial(new SerialConfigBundle());
+            string configPath = Path.Combine(AppContext.BaseDirectory, "Config");
+            var result = ModbusRTUCFG.LoadDevice(configPath);
+            if (!result.IsSuccess || result.Content == null)
+            {
+                MessageBox.Show($"Excel 配置加载失败：{result.Message}", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-            var t = ConfigHelper.Load<ThresholdConfigBundle>(ConfigHelper.SystemConfigPath);
-            if (t.IsSuccess && t.Content != null) ApplyThreshold(t.Content);
+            ApplyExcelConfig(result.Content);
+        }
+
+        /// <summary>
+        /// 把 Excel 文件名和 Sheet 变量中的配置加载到参数界面。
+        /// 文件名提供串口参数，变量行提供各区域温湿度报警阈值。
+        /// </summary>
+        private void ApplyExcelConfig(List<ModbusRTUDevice> devices)
+        {
+            foreach (var device in devices)
+            {
+                SerialPortParams serial = new SerialPortParams
+                {
+                    PortName = device.PortName,
+                    BaudRate = device.BaudRate,
+                    Parity = device.Parity.ToString(),
+                    DataBits = device.DataBits,
+                    StopBits = device.StopBits.ToString()
+                };
+
+                if (device.DeviceName.Contains("A区"))
+                {
+                    ApplySerialA(serial);
+                }
+                else if (device.DeviceName.Contains("B区"))
+                {
+                    ApplySerialB(serial);
+                }
+
+                foreach (var group in device.GroupList)
+                {
+                    foreach (var variable in group.VariableList)
+                    {
+                        ApplyVariableThreshold(group.GroupName, variable);
+                    }
+                }
+            }
+        }
+
+        private void ApplySerialA(SerialPortParams serial)
+        {
+            txtAPort.Text = serial.PortName;
+            SetCombo(cboABaud, serial.BaudRate.ToString(), "9600");
+            SetCombo(cboAParity, serial.Parity, "None");
+            SetCombo(cboADataBits, serial.DataBits.ToString(), "8");
+            SetCombo(cboAStopBits, serial.StopBits, "One");
+        }
+
+        private void ApplySerialB(SerialPortParams serial)
+        {
+            txtBPort.Text = serial.PortName;
+            SetCombo(cboBBaud, serial.BaudRate.ToString(), "9600");
+            SetCombo(cboBParity, serial.Parity, "None");
+            SetCombo(cboBDataBits, serial.DataBits.ToString(), "8");
+            SetCombo(cboBStopBits, serial.StopBits, "One");
+        }
+
+        private void ApplyVariableThreshold(string zoneName, ModbusRTUVariable variable)
+        {
+            bool isTemperature = variable.VarName?.Contains("温度") == true;
+            bool isHumidity = variable.VarName?.Contains("湿度") == true;
+            if (!isTemperature && !isHumidity) return;
+
+            TextBox? highTextBox = FindThresholdTextBox(zoneName, isTemperature, true);
+            TextBox? lowTextBox = FindThresholdTextBox(zoneName, isTemperature, false);
+            if (highTextBox == null || lowTextBox == null) return;
+
+            highTextBox.Text = variable.HAlarmValue.ToString("F1");
+            lowTextBox.Text = variable.LAlarmValue.ToString("F1");
+        }
+
+        private TextBox? FindThresholdTextBox(string zoneName, bool isTemperature, bool isHigh)
+        {
+            string suffix = isTemperature ? "Temp" : "Hum";
+            string limit = isHigh ? "High" : "Low";
+            string controlName = $"txt{suffix}{zoneName}{limit}";
+            return Controls.Find(controlName, true).FirstOrDefault() as TextBox;
         }
 
 
@@ -160,23 +138,6 @@ namespace xbd.WarehouseTHPro
         private void timer1_Tick(object sender, EventArgs e)
         {
             _tickCount++;
-        }
-
-        private static string GetComboText(ComboBox cbo, string defaultValue)
-        {
-            return string.IsNullOrWhiteSpace(cbo.Text) ? defaultValue : cbo.Text.Trim();
-        }
-
-        private static int ParseIntCombo(ComboBox cbo, int defaultValue)
-        {
-            if (int.TryParse(cbo.Text?.Trim(), out var v)) return v;
-            return defaultValue;
-        }
-
-        private static double ParseDouble(string? text, double defaultValue)
-        {
-            if (double.TryParse(text?.Trim(), out var v)) return v;
-            return defaultValue;
         }
 
         /// <summary>

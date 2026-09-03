@@ -67,7 +67,6 @@ namespace xbd.NodeSetting.Base
 
         private void UpdateAlarm(VariableBase variable)
         {
-            // 值还没读到（通讯未成功），跳过报警判断，避免 null 拆箱异常
             if (variable.VarValue is null) return;
 
             if (!variable.HAlarm && !variable.LAlarm) return;

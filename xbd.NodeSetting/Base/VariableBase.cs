@@ -49,7 +49,7 @@ namespace xbd.NodeSetting.Base
         /// <summary>
         /// 高报警限值
         /// </summary>
-        [ExcelColumnName("高报警限值")]
+        [ExcelColumnName("高报警值")]
         public float HAlarmValue { get; set; }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace xbd.NodeSetting.Base
         /// <summary>
         /// 低报警限值
         /// </summary>
-        [ExcelColumnName("低报警限值")]
+        [ExcelColumnName("低报警值")]
         public float LAlarmValue { get; set; }
 
         /// <summary>

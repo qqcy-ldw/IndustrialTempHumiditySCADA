@@ -13,15 +13,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Config\*.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ScottPlot.WinForms" Version="4.1.70" />
-    <PackageReference Include="System.Windows.Forms.DataVisualization" Version="1.0.0-prerelease.20110.1" />
     <PackageReference Include="thinger.DataConvertLib" Version="4.0.1" />
+    <PackageReference Include="MiniExcel" Version="1.45.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\xbd.ControlLib\xbd.ControlLib.csproj" />
     <ProjectReference Include="..\xbd.NodeSetting\xbd.NodeSetting.csproj" />
     <ProjectReference Include="..\xbd.WarehouseTHBLL\xbd.WarehouseTHBLL.csproj" />
+    <ProjectReference Include="..\xbd.WarehouseTHDAL\xbd.WarehouseTHDAL.csproj" />
     <ProjectReference Include="..\xbd.WarehouseTHModels\xbd.WarehouseTHModels.csproj" />
     <ProjectReference Include="..\xbd.WarehouseTHUtils\xbd.WarehouseTHUtils.csproj" />
   </ItemGroup>
