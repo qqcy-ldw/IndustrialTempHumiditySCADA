@@ -91,7 +91,8 @@ namespace xbd.WarehouseTHPro
                         if (group == null) continue; 
 
                         // 更新设备状态
-                        monitor.IsAvailable = group.IsOK;
+                        // 设备断线时即使组状态还没来得及刷新，也必须立即显示为异常。
+                        monitor.IsAvailable = device.IsConnected && group.IsOK;
 
                         string tempKey = $"{monitor.GroupName}{KEY_SPLIT}{KEY_TEMP_SUFFIX}";
                         string humidityKey = $"{monitor.GroupName}{KEY_SPLIT}{KEY_HUMIDITY_SUFFIX}";

@@ -19,6 +19,12 @@ namespace xbd.WarehouseTHPro
 
         private void InitializeComponent()
         {
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
             queryPanel = new FlowLayoutPanel();
             lblCapFrom = new Label();
             dtpFrom = new DateTimePicker();
@@ -93,7 +99,7 @@ namespace xbd.WarehouseTHPro
             dtpFrom.Format = DateTimePickerFormat.Custom;
             dtpFrom.Location = new Point(108, 11);
             dtpFrom.Name = "dtpFrom";
-            dtpFrom.Size = new Size(190, 27);
+            dtpFrom.Size = new Size(207, 27);
             dtpFrom.TabIndex = 1;
             dtpFrom.Value = new DateTime(2026, 9, 2, 0, 0, 0, 0);
             // 
@@ -102,7 +108,7 @@ namespace xbd.WarehouseTHPro
             lblCapTo.AutoSize = true;
             lblCapTo.Font = new Font("微软雅黑", 10F);
             lblCapTo.ForeColor = Color.White;
-            lblCapTo.Location = new Point(331, 15);
+            lblCapTo.Location = new Point(330, 15);
             lblCapTo.Margin = new Padding(12, 7, 5, 0);
             lblCapTo.Name = "lblCapTo";
             lblCapTo.Size = new Size(78, 23);
@@ -114,9 +120,9 @@ namespace xbd.WarehouseTHPro
             dtpTo.CustomFormat = "yyyy-MM-dd HH:mm:ss";
             dtpTo.Font = new Font("微软雅黑", 9F);
             dtpTo.Format = DateTimePickerFormat.Custom;
-            dtpTo.Location = new Point(417, 11);
+            dtpTo.Location = new Point(416, 11);
             dtpTo.Name = "dtpTo";
-            dtpTo.Size = new Size(190, 27);
+            dtpTo.Size = new Size(205, 27);
             dtpTo.TabIndex = 3;
             dtpTo.Value = new DateTime(2026, 9, 2, 22, 15, 48, 318);
             // 
@@ -125,7 +131,7 @@ namespace xbd.WarehouseTHPro
             lblCapZone.AutoSize = true;
             lblCapZone.Font = new Font("微软雅黑", 10F);
             lblCapZone.ForeColor = Color.White;
-            lblCapZone.Location = new Point(634, 15);
+            lblCapZone.Location = new Point(636, 15);
             lblCapZone.Margin = new Padding(12, 7, 5, 0);
             lblCapZone.Name = "lblCapZone";
             lblCapZone.Size = new Size(44, 23);
@@ -137,7 +143,7 @@ namespace xbd.WarehouseTHPro
             cboZone.DropDownStyle = ComboBoxStyle.DropDownList;
             cboZone.Font = new Font("微软雅黑", 9F);
             cboZone.Items.AddRange(new object[] { "全部区域", "A01", "A02", "A03", "B01", "B02", "B03" });
-            cboZone.Location = new Point(686, 11);
+            cboZone.Location = new Point(688, 11);
             cboZone.Name = "cboZone";
             cboZone.Size = new Size(100, 28);
             cboZone.TabIndex = 5;
@@ -149,7 +155,7 @@ namespace xbd.WarehouseTHPro
             btnQuery.FlatStyle = FlatStyle.Flat;
             btnQuery.Font = new Font("微软雅黑", 10F, FontStyle.Bold);
             btnQuery.ForeColor = Color.FromArgb(43, 50, 120);
-            btnQuery.Location = new Point(801, 8);
+            btnQuery.Location = new Point(803, 8);
             btnQuery.Margin = new Padding(12, 0, 0, 0);
             btnQuery.Name = "btnQuery";
             btnQuery.Size = new Size(78, 30);
@@ -366,37 +372,43 @@ namespace xbd.WarehouseTHPro
             // 
             // dataGridView1
             // 
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(246, 248, 252);
+            dataGridView1.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridView1.BackgroundColor = Color.White;
             dataGridView1.BorderStyle = BorderStyle.None;
             dataGridView1.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = Color.FromArgb(43, 50, 120);
+            dataGridViewCellStyle2.Font = new Font("微软雅黑", 10F, FontStyle.Bold);
+            dataGridViewCellStyle2.ForeColor = Color.White;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+            dataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Id, DeviceName, ZoneName, Temperature, Humidity, RecordedAT, IsAvailable });
+            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle6.BackColor = SystemColors.Window;
+            dataGridViewCellStyle6.Font = new Font("微软雅黑", 9F);
+            dataGridViewCellStyle6.ForeColor = Color.FromArgb(45, 48, 55);
+            dataGridViewCellStyle6.SelectionBackColor = Color.FromArgb(218, 230, 255);
+            dataGridViewCellStyle6.SelectionForeColor = Color.FromArgb(30, 45, 80);
+            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
+            dataGridView1.DefaultCellStyle = dataGridViewCellStyle6;
             dataGridView1.Dock = DockStyle.Bottom;
-            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridView1.EnableHeadersVisualStyles = false;
             dataGridView1.GridColor = Color.FromArgb(220, 224, 235);
+            dataGridView1.Location = new Point(0, 519);
             dataGridView1.MultiSelect = false;
+            dataGridView1.Name = "dataGridView1";
             dataGridView1.ReadOnly = true;
             dataGridView1.RowHeadersVisible = false;
+            dataGridView1.RowHeadersWidth = 51;
             dataGridView1.RowTemplate.Height = 30;
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridView1.Location = new Point(0, 519);
-            dataGridView1.Name = "dataGridView1";
-            dataGridView1.RowHeadersWidth = 51;
             dataGridView1.Size = new Size(1128, 188);
             dataGridView1.TabIndex = 4;
-            dataGridView1.AutoGenerateColumns = false;
-            dataGridView1.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridView1.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(43, 50, 120);
-            dataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("微软雅黑", 10F, FontStyle.Bold);
-            dataGridView1.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dataGridView1.ColumnHeadersHeight = 34;
-            dataGridView1.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dataGridView1.DefaultCellStyle.Font = new Font("微软雅黑", 9F);
-            dataGridView1.DefaultCellStyle.ForeColor = Color.FromArgb(45, 48, 55);
-            dataGridView1.DefaultCellStyle.SelectionBackColor = Color.FromArgb(218, 230, 255);
-            dataGridView1.DefaultCellStyle.SelectionForeColor = Color.FromArgb(30, 45, 80);
-            dataGridView1.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(246, 248, 252);
             // 
             // Id
             // 
@@ -404,7 +416,7 @@ namespace xbd.WarehouseTHPro
             Id.HeaderText = "编号";
             Id.MinimumWidth = 6;
             Id.Name = "Id";
-            Id.Width = 125;
+            Id.ReadOnly = true;
             // 
             // DeviceName
             // 
@@ -412,7 +424,7 @@ namespace xbd.WarehouseTHPro
             DeviceName.HeaderText = "设备名称";
             DeviceName.MinimumWidth = 6;
             DeviceName.Name = "DeviceName";
-            DeviceName.Width = 155;
+            DeviceName.ReadOnly = true;
             // 
             // ZoneName
             // 
@@ -420,34 +432,37 @@ namespace xbd.WarehouseTHPro
             ZoneName.HeaderText = "区域名称";
             ZoneName.MinimumWidth = 6;
             ZoneName.Name = "ZoneName";
-            ZoneName.Width = 155;
+            ZoneName.ReadOnly = true;
             // 
             // Temperature
             // 
             Temperature.DataPropertyName = "Temperature";
+            dataGridViewCellStyle3.Format = "F1";
+            Temperature.DefaultCellStyle = dataGridViewCellStyle3;
             Temperature.HeaderText = "温度";
             Temperature.MinimumWidth = 6;
             Temperature.Name = "Temperature";
-            Temperature.Width = 125;
-            Temperature.DefaultCellStyle.Format = "F1";
+            Temperature.ReadOnly = true;
             // 
             // Humidity
             // 
             Humidity.DataPropertyName = "Humidity";
+            dataGridViewCellStyle4.Format = "F1";
+            Humidity.DefaultCellStyle = dataGridViewCellStyle4;
             Humidity.HeaderText = "湿度";
             Humidity.MinimumWidth = 6;
             Humidity.Name = "Humidity";
-            Humidity.Width = 125;
-            Humidity.DefaultCellStyle.Format = "F1";
+            Humidity.ReadOnly = true;
             // 
             // RecordedAT
             // 
             RecordedAT.DataPropertyName = "RecordedAt";
+            dataGridViewCellStyle5.Format = "yyyy-MM-dd HH:mm:ss";
+            RecordedAT.DefaultCellStyle = dataGridViewCellStyle5;
             RecordedAT.HeaderText = "采集时间";
             RecordedAT.MinimumWidth = 6;
             RecordedAT.Name = "RecordedAT";
-            RecordedAT.Width = 170;
-            RecordedAT.DefaultCellStyle.Format = "yyyy-MM-dd HH:mm:ss";
+            RecordedAT.ReadOnly = true;
             // 
             // IsAvailable
             // 
@@ -455,7 +470,7 @@ namespace xbd.WarehouseTHPro
             IsAvailable.HeaderText = "设备状态";
             IsAvailable.MinimumWidth = 6;
             IsAvailable.Name = "IsAvailable";
-            IsAvailable.Width = 125;
+            IsAvailable.ReadOnly = true;
             // 
             // FrmHistoryTrend
             // 

@@ -14,7 +14,7 @@ namespace modbus.CommunicationLibl.Helper
         /// <param name="data">要计算的数据</param>
         /// <param name="offset">起始索引</param>
         /// <param name="length">长度</param>
-        /// <returns>2 字节 CRC，低字节在前</returns>
+        /// <returns>2 字节 CRC，低字节在前(返回的是小端序)</returns>
         public static byte[] Calculate(byte[] data, int offset = 0, int length = -1)
         {
             if (data == null || data.Length == 0)

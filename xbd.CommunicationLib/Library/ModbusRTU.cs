@@ -42,6 +42,11 @@ namespace modbus.CommunicationLibl.Library
             {
                 return OperateResult.CreateFailResult<bool[]>("CRC校验失败"+result.Content);
             }
+            bool isModbusError = IsModbusErrorFrame(result.Content, isTcp: false, out byte realFuncCodem, out byte errorCode);
+            if (isModbusError)
+            {
+                return OperateResult.CreateFailResult<bool[]>($"异常！原始功能码：0x{realFuncCodem:X2}，异常码：{errorCode}");
+            }
 
             // 提取线圈状态数据
             int byteLength = length % 8 == 0 ? length / 8 : length / 8 + 1;
@@ -84,6 +89,11 @@ namespace modbus.CommunicationLibl.Library
             {
                 return OperateResult.CreateFailResult<byte[]>("CRC校验失败" + result.Content);
             }
+            bool isModbusError = IsModbusErrorFrame(result.Content, isTcp: false, out byte realFuncCodem, out byte errorCode);
+            if (isModbusError)
+            {
+                return OperateResult.CreateFailResult<byte[]>($"异常！原始功能码：0x{realFuncCodem:X2}，异常码：{errorCode}");
+            }
 
             // 提取寄存器数据
             int byteLength = length * 2;
@@ -122,6 +132,11 @@ namespace modbus.CommunicationLibl.Library
             if (!crcValid)
             {
                 return OperateResult.CreateFailResult<byte[]>("CRC校验失败" + result.Content);
+            }
+            bool isModbusError = IsModbusErrorFrame(result.Content, isTcp: false, out byte realFuncCodem, out byte errorCode);
+            if (isModbusError)
+            {
+                return OperateResult.CreateFailResult<byte[]>($"异常！原始功能码：0x{realFuncCodem:X2}，异常码：{errorCode}");
             }
 
             // 提取线圈状态数据
@@ -211,6 +226,11 @@ namespace modbus.CommunicationLibl.Library
             // 3. CRC 校验
             if (!CRCHelper.Verify(result.Content))
                 return OperateResult.CreateFailResult("CRC校验失败");
+            bool isModbusError = IsModbusErrorFrame(result.Content, isTcp: false, out byte realFuncCodem, out byte errorCode);
+            if (isModbusError)
+            {
+                return OperateResult.CreateFailResult($"异常！原始功能码：0x{realFuncCodem:X2}，异常码：{errorCode}");
+            }
 
             // 4. 解析响应帧并验证
             byte[] response = result.Content;
@@ -270,6 +290,11 @@ namespace modbus.CommunicationLibl.Library
             // 3、CRC 校验
             if (!CRCHelper.Verify(result.Content))
                 return OperateResult.CreateFailResult("CRC校验失败");
+            bool isModbusError = IsModbusErrorFrame(result.Content, isTcp: false, out byte realFuncCodem, out byte errorCode);
+            if (isModbusError)
+            {
+                return OperateResult.CreateFailResult($"异常！原始功能码：0x{realFuncCodem:X2}，异常码：{errorCode}");
+            }
 
             // 4、解析响应帧并验证
             byte[] response = result.Content;
@@ -321,6 +346,11 @@ namespace modbus.CommunicationLibl.Library
             // 3、验证报文是否正确
             if (CRCHelper.Verify(result.Content))
             {
+                bool isModbusError = IsModbusErrorFrame(result.Content, isTcp: false, out byte realFuncCodem, out byte errorCode);
+                if (isModbusError)
+                {
+                    return OperateResult.CreateFailResult<bool[]>($"异常！原始功能码：0x{realFuncCodem:X2}，异常码：{errorCode}");
+                }
                 // 4、验证响应是否与请求一致（回显校验），功能码 05 的响应帧必须是请求帧的完全拷贝
                 if (result.Content.SequenceEqual(sendCommand.ToArray()))
                 {
@@ -369,6 +399,11 @@ namespace modbus.CommunicationLibl.Library
             // 3、验证报文是否正确
             if (CRCHelper.Verify(result.Content))
             {
+                bool isModbusError = IsModbusErrorFrame(result.Content, isTcp: false, out byte realFuncCodem, out byte errorCode);
+                if (isModbusError)
+                {
+                    return OperateResult.CreateFailResult<bool[]>($"异常！原始功能码：0x{realFuncCodem:X2}，异常码：{errorCode}");
+                }
                 // 4、验证响应是否与请求一致（回显校验），功能码 06 的响应帧必须是请求帧的完全拷贝
                 if (result.Content.SequenceEqual(sendCommand.ToArray()))
                 {
@@ -402,6 +437,40 @@ namespace modbus.CommunicationLibl.Library
             low = (byte)(value & 0xFF);
         }
 
-        
+        /// <summary>
+        /// 解析Modbus应答帧，判断是否为异常响应
+        /// </summary>
+        /// <param name="data">完整报文</param>
+        /// <param name="isTcp">true=ModbusTCP，false=ModbusRTU</param>
+        /// <param name="realFuncCode">输出原始功能码</param>
+        /// <param name="errorCode">输出异常码，正常时为0</param>
+        /// <returns>true=异常应答；false=正常应答</returns>
+        public static bool IsModbusErrorFrame(byte[] data, bool isTcp, out byte realFuncCode, out byte errorCode)
+        {
+            realFuncCode = 0;
+            errorCode = 0;
+            if (data == null || data.Length < 5)
+                return false;
+            byte funcByte;
+            if (isTcp)
+            {
+                funcByte = data[7];
+                if (data.Length < 9)
+                    return false;
+            }
+            else
+            {
+                funcByte = data[1];
+            }
+
+            if (funcByte > 0X80)
+            {
+                realFuncCode = (byte)(funcByte - 0X80);
+                errorCode = isTcp ? data[8] : data[2];
+                return true;
+            }
+            realFuncCode = funcByte;
+            return false;
+        }
     }
 }

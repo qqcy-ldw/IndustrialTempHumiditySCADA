@@ -38,5 +38,10 @@ namespace xbd.NodeSetting.Common
         /// </summary>
         public bool IsTriggered { get; set; }
 
+        /// <summary>
+        /// 是否为高限报警；false 表示低限报警。
+        /// </summary>
+        public bool IsHighAlarm { get; set; }
+
     }
 }

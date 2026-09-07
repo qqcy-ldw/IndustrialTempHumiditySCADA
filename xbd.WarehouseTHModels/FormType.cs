@@ -17,7 +17,6 @@ namespace xbd.WarehouseTHModels
         参数配置 = 0,
         历史趋势 = 0,
         报警记录 = 0,
-        数据报表 = 0,
         用户管理 = 0
     }
 }

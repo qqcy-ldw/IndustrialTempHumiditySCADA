@@ -35,7 +35,6 @@ namespace xbd.WarehouseTHPro
             pbLogo = new PictureBox();
             pnlMenu = new Panel();
             btnUserManage = new Button();
-            btnDataReport = new Button();
             btnAlarmRecord = new Button();
             btnHistoryTrend = new Button();
             btnParamConfig = new Button();
@@ -91,7 +90,6 @@ namespace xbd.WarehouseTHPro
             // 
             pnlMenu.BackColor = Color.FromArgb(43, 50, 120);
             pnlMenu.Controls.Add(btnUserManage);
-            pnlMenu.Controls.Add(btnDataReport);
             pnlMenu.Controls.Add(btnAlarmRecord);
             pnlMenu.Controls.Add(btnHistoryTrend);
             pnlMenu.Controls.Add(btnParamConfig);
@@ -122,26 +120,6 @@ namespace xbd.WarehouseTHPro
             btnUserManage.TextAlign = ContentAlignment.MiddleLeft;
             btnUserManage.TextImageRelation = TextImageRelation.ImageBeforeText;
             btnUserManage.UseVisualStyleBackColor = false;
-            // 
-            // btnDataReport
-            // 
-            btnDataReport.BackColor = Color.FromArgb(43, 50, 120);
-            btnDataReport.Dock = DockStyle.Top;
-            btnDataReport.FlatAppearance.BorderSize = 0;
-            btnDataReport.FlatStyle = FlatStyle.Flat;
-            btnDataReport.Font = new Font("微软雅黑", 12F);
-            btnDataReport.ForeColor = Color.White;
-            btnDataReport.Image = (Image)resources.GetObject("btnDataReport.Image");
-            btnDataReport.ImageAlign = ContentAlignment.MiddleLeft;
-            btnDataReport.Location = new Point(0, 470);
-            btnDataReport.Name = "btnDataReport";
-            btnDataReport.Padding = new Padding(32, 0, 0, 0);
-            btnDataReport.Size = new Size(215, 94);
-            btnDataReport.TabIndex = 5;
-            btnDataReport.Text = "   数据报表";
-            btnDataReport.TextAlign = ContentAlignment.MiddleLeft;
-            btnDataReport.TextImageRelation = TextImageRelation.ImageBeforeText;
-            btnDataReport.UseVisualStyleBackColor = false;
             // 
             // btnAlarmRecord
             // 
@@ -364,7 +342,6 @@ namespace xbd.WarehouseTHPro
         private System.Windows.Forms.Button btnParamConfig;
         private System.Windows.Forms.Button btnHistoryTrend;
         private System.Windows.Forms.Button btnAlarmRecord;
-        private System.Windows.Forms.Button btnDataReport;
         private System.Windows.Forms.Button btnUserManage;
         private System.Windows.Forms.Panel pnlContent;
         private System.Windows.Forms.Panel pnlFooter;

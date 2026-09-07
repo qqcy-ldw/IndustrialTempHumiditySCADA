@@ -1,6 +1,8 @@
 using System.Reflection.Emit;
+using System.Globalization;
 using xbd.NodeSetting.Common;
 using xbd.NodeSetting.ModbusRTU;
+using xbd.WarehouseTHDAL;
 
 namespace xbd.WarehouseTHPro
 {
@@ -15,10 +17,13 @@ namespace xbd.WarehouseTHPro
         /// <summary>当前显示的普通页（同一时间最多一个）</summary>
         private Form? _currentNormalPage = null;
         private string? _currentNormalTitle = null;
+        private readonly AlarmRecordRepository _alarmRepository = new();
+        private readonly HashSet<ModbusRTUDevice> _alarmDevices = new();
 
         public FrmMain()
         {
             InitializeComponent();
+            _alarmRepository.Initialize();
 
             // 左侧菜单所有按钮统一订阅同一个事件
             foreach (Control c in pnlMenu.Controls)
@@ -45,7 +50,6 @@ namespace xbd.WarehouseTHPro
                 case "参数配置": return new FrmParamConfig();
                 case "历史趋势": return new FrmHistoryTrend();
                 case "报警记录": return new FrmAlarmRecord();
-                case "数据报表": return new FrmDataReport();
                 case "用户管理": return new FrmUserManage();
                 default: return null;
             }
@@ -140,6 +144,7 @@ namespace xbd.WarehouseTHPro
             // 集中监控页刷数据
             var monitor = (FrmCentralMonitor)_pages["集中监控"];
             monitor.UpdateMonitor();
+            SubscribeAlarmEvents(monitor._devices);
 
             // 实时趋势页跟着追加一个数据点（用的是同一批设备）
             var trend = (FrmRealtimeTrend)_pages["实时趋势"];
@@ -158,6 +163,80 @@ namespace xbd.WarehouseTHPro
 
             if (devB != null)
                 lblAreaB.Text = $"B区: {(devB.IsConnected ? "串口已连接" : "串口关闭")} | {devB.CommPeriod} ms";
+        }
+
+        /// <summary>
+        /// 为每个设备订阅一次报警事件，避免页面刷新时重复订阅。
+        /// </summary>
+        private void SubscribeAlarmEvents(IEnumerable<ModbusRTUDevice> devices)
+        {
+            foreach (var device in devices)
+            {
+                if (_alarmDevices.Add(device))
+                {
+                    device.AlarmEvent += Device_AlarmEvent;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 报警状态发生变化时写入或关闭数据库记录。
+        /// </summary>
+        private void Device_AlarmEvent(object sender, AlarmEventArgs e)
+        {
+            try
+            {
+                if (e.IsTriggered)
+                {
+                    _alarmRepository.InsertTriggered(CreateAlarmRecord(e, DateTime.Now));
+                }
+                else
+                {
+                    _alarmRepository.MarkRecovered(CreateAlarmRecord(e, DateTime.Now));
+                }
+            }
+            catch (Exception ex)
+            {
+#if DEBUG
+                System.Diagnostics.Debug.WriteLine($"保存报警记录失败：{ex}");
+#endif
+            }
+        }
+
+        /// <summary>
+        ///  根据报警事件参数创建数据库记录对象
+        /// </summary>
+        /// <param name="alarm"></param>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        private static AlarmRecord CreateAlarmRecord(AlarmEventArgs alarm, DateTime time)
+        {
+            string variableName = alarm.VarName ?? "";
+            string zoneName = variableName.Length >= 3 ? variableName[..3] : variableName;
+            double? currentValue = ParseNumber(alarm.CurrentValue);
+            double? limitValue = ParseNumber(alarm.AlarmValue);
+            string valueType = variableName.Contains("湿度") ? "湿度" : "温度";
+
+            return new AlarmRecord
+            {
+                OccurredAt = time,
+                RecoveredAt = alarm.IsTriggered ? null : time,
+                DeviceName = alarm.DeviceName ?? "",
+                ZoneName = zoneName,
+                VariableName = variableName,
+                AlarmType = $"{(alarm.IsHighAlarm ? "高" : "低")}{valueType}",
+                CurrentValue = currentValue,
+                LimitValue = limitValue,
+                AlarmNote = alarm.AlarmNote ?? "",
+                IsActive = alarm.IsTriggered
+            };
+        }
+
+        private static double? ParseNumber(string? text)
+        {
+            if (double.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out double value)) return value;
+            if (double.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out value)) return value;
+            return null;
         }
 
     }

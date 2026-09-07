@@ -97,7 +97,8 @@ namespace xbd.NodeSetting.Base
                         CurrentValue = variable.VarValue.ToString(),
                         AlarmValue = variable.HAlarmValue.ToString(),
                         AlarmNote = variable.HAlarmNote ?? "",
-                        IsTriggered = result == 1
+                        IsTriggered = result == 1,
+                        IsHighAlarm = true
                     });
                 }
             }
@@ -117,7 +118,8 @@ namespace xbd.NodeSetting.Base
                         CurrentValue = variable.VarValue.ToString(),
                         AlarmValue = variable.LAlarmValue.ToString(),
                         AlarmNote = variable.LAlarmNote ?? "",
-                        IsTriggered = result == 1
+                        IsTriggered = result == 1,
+                        IsHighAlarm = false
                     });
                 }
             }

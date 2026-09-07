@@ -72,15 +72,13 @@ namespace xbd.NodeSetting.ModbusRTU
             {
                 if (IsConnected)
                 {
-                    cts.Cancel();
-
                     Stopwatch StopWatch = Stopwatch.StartNew();
                     foreach (var gp in GroupList)
                     {
                         gp.IsOK = GetGroupValue(gp);
                     }
                     var now = DateTime.Now;
-                    // 处理失败组：只有到时间才重试
+                    // 掉线重连：处理失败组：只有到时间才重试
                     foreach (var ngGroup in GroupList.Where(g => !g.IsOK))
                     {
                         if (!_retrySchedule.TryGetValue(ngGroup, out var nextRetryTime) || now >= nextRetryTime)
@@ -98,19 +96,28 @@ namespace xbd.NodeSetting.ModbusRTU
                         _retrySchedule.Remove(gp);
                     }
 
-                    // 如果所有的组数据读取失败并且端口号不存在断线重连
-                    if (GroupList.Where(c => c.IsOK).Count() == GroupList.Count())
+                    // 所有组都读取失败时，说明从站已经停止响应。
+                    // 不能只判断串口是否存在，因为模拟从站关闭后 COM 口仍然可能存在。
+                    if (GroupList.Count > 0 && GroupList.All(c => !c.IsOK))
                     {
-                        if (!SerialPort.GetPortNames().Contains(PortName))
-                        {
-                            IsConnected = false;
-                        }
+                        IsConnected = false;
+                        foreach (var group in GroupList) group.IsOK = false;
                     }
                     CommPeriod = StopWatch.ElapsedMilliseconds;
                 }
                 else
                 {
+                    foreach (var group in GroupList) group.IsOK = false;
                     if (!FirstConnectSign) Thread.Sleep(ReConnectTime);
+                    // 断线重连前先释放旧的 SerialPort，避免旧句柄占用 COM 口导致重连失败。
+                    try
+                    {
+                        modbusRTU?.Close();
+                    }
+                    catch
+                    {
+                        // 关闭失败不影响下一次连接尝试。
+                    }
                     IsConnected = modbusRTU.Connect(PortName, BaudRate, DataBits, Parity, StopBits);
                     if (IsConnected) FirstConnectSign = false;
                 }
@@ -267,7 +274,16 @@ namespace xbd.NodeSetting.ModbusRTU
         /// </summary>
         public void Stop()
         {
-
+            try
+            {
+                cts?.Cancel();
+                modbusRTU?.Close();
+            }
+            catch
+            {
+                // 停止时释放资源，关闭异常不再向上抛出。
+            }
+            IsConnected = false;
         }
 
         #region======通用方法========

@@ -80,10 +80,7 @@ public class SerialDeviceBase
     /// </summary>
     public void Close()
     {
-        if (_serialPort.IsOpen)
-        {
-            _serialPort.Close();
-        }
+        _serialPort?.Close();
     }
 
 
