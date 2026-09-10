@@ -359,6 +359,14 @@ namespace modbus.CommunicationLibl.Library
         /// </summary>
         private OperateResult CheckResponse(byte[] response, bool isRead, byte slaveId)
         {
+            // Modbus TCP 异常帧：MBAP头(7)+异常功能码(1)+异常码(1)。
+            // 异常帧固定只有 9 字节，必须先判断，避免写操作被后面的长度校验误判。
+            bool isModbusError = ModbusRTU.IsModbusErrorFrame(response, isTcp: true, out byte realFuncCode, out byte errorCode);
+            if (isModbusError)
+            {
+                return OperateResult.CreateFailResult($"异常！原始功能码：0x{realFuncCode:X2}，异常码：{errorCode}");
+            }
+
             // 读响应: MBAP头(7)+功能码(1)+字节数(1)+数据(N)，最短9字节
             // 写响应: MBAP头(7)+功能码(1)+地址(2)+数量(2)，固定12字节
             int minLength = isRead ? 9 : 12;
