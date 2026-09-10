@@ -46,7 +46,7 @@ VALUES (@UserName, @PasswordHash, @RoleName, 1, @CreatedAt, @UpdatedAt);",
         /// <summary>
         /// 按账号关键字查询用户；关键字为空时返回全部用户。
         /// </summary>
-        public IReadOnlyList<UserAccount> Query(string? keyword)
+        public List<UserAccount> Query(string? keyword)
         {
             string sql = @"
 SELECT id Id, user_name UserName, password_hash PasswordHash,
@@ -58,6 +58,37 @@ ORDER BY id;";
 
             string searchText = string.IsNullOrWhiteSpace(keyword) ? "" : $"%{keyword.Trim()}%";
             return SQLiteHelper.Query<UserAccount>(sql, new { Keyword = searchText });
+        }
+
+        /// <summary>
+        /// 验证登录账号和密码。
+        /// 只有启用状态的账号可以登录，验证失败时返回 null。
+        /// </summary>
+        public UserAccount? ValidateLogin(string userName, string password)
+        {
+            if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
+            {
+                return null;
+            }
+
+            UserAccount? user = SQLiteHelper.QueryFirst<UserAccount>(@"
+SELECT id Id, user_name UserName, password_hash PasswordHash,
+       role_name RoleName, is_enabled IsEnabled,
+       created_at CreatedAt, updated_at UpdatedAt
+FROM sys_users
+WHERE user_name = @UserName AND is_enabled = 1
+LIMIT 1;",
+                new { UserName = userName.Trim() });
+
+            if (user is null)
+            {
+                return null;
+            }
+
+            string passwordHash = HashPassword(password);
+            return string.Equals(user.PasswordHash, passwordHash, StringComparison.OrdinalIgnoreCase)
+                ? user
+                : null;
         }
 
         /// <summary>

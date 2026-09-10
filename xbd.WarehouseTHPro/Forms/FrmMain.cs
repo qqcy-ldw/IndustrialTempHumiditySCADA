@@ -19,10 +19,22 @@ namespace xbd.WarehouseTHPro
         private string? _currentNormalTitle = null;
         private readonly AlarmRecordRepository _alarmRepository = new();
         private readonly HashSet<ModbusRTUDevice> _alarmDevices = new();
+        private static UserAccount userAccount;
 
-        public FrmMain()
+        public FrmMain() : this(null)
+        {
+        }
+
+        public FrmMain(UserAccount? loginUser)
         {
             InitializeComponent();
+
+            userAccount = loginUser;
+            if (loginUser != null)
+            {
+                lblLoginUser.Text = $"登录用户: {loginUser.UserName}";
+            }
+
             _alarmRepository.Initialize();
 
             // 左侧菜单所有按钮统一订阅同一个事件
@@ -50,7 +62,16 @@ namespace xbd.WarehouseTHPro
                 case "参数配置": return new FrmParamConfig();
                 case "历史趋势": return new FrmHistoryTrend();
                 case "报警记录": return new FrmAlarmRecord();
-                case "用户管理": return new FrmUserManage();
+                case "用户管理":
+                if (userAccount.RoleName == "操作员")
+                {
+                        MessageBox.Show("当前登录用户没有权限访问用户管理页面。", "权限提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return null;
+                    }
+                    else
+                    {
+                        return new FrmUserManage();
+                    }
                 default: return null;
             }
         }
@@ -91,7 +112,7 @@ namespace xbd.WarehouseTHPro
                     pnlContent.Controls.Add(form);
                 }
                 // 销毁当前普通页（普通页和固定页不共存）
-                CloseNormalPage();   
+                CloseNormalPage();
                 // 只有目标固定页可见
                 foreach (var c in _pages)
                     c.Value.Visible = (c.Value == form);
@@ -175,9 +196,9 @@ namespace xbd.WarehouseTHPro
                 if (_alarmDevices.Add(device))
                 {
                     device.AlarmEvent += Device_AlarmEvent;
+                    }
                 }
             }
-        }
 
         /// <summary>
         /// 报警状态发生变化时写入或关闭数据库记录。
@@ -239,5 +260,27 @@ namespace xbd.WarehouseTHPro
             return null;
         }
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            using FrmLogin loginForm = new FrmLogin();
+            if (loginForm.ShowDialog() == DialogResult.OK)
+            {
+                lblLoginUser.Text = $"登录用户: {loginForm.LoginUser.UserName}";
+                UserAccountRepository userAccount = new UserAccountRepository();
+                var userAccounts = userAccount.Query(loginForm.LoginUser.UserName);
+                if (userAccounts.Any() && userAccounts.First().RoleName == "操作员")
+                {
+                    if (_currentNormalTitle == "用户管理")
+                    {
+                        CloseNormalPage();
+                        MessageBox.Show("当前登录用户没有权限访问用户管理页面。", "权限提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
+                else
+                {
+                    ShowPage("用户管理");
+                }
+            }
+        }
     }
 }

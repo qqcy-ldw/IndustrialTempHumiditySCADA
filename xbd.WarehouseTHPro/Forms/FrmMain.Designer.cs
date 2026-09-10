@@ -48,6 +48,7 @@ namespace xbd.WarehouseTHPro
             lblAreaB = new Label();
             lblAreaA = new Label();
             timer1 = new System.Windows.Forms.Timer(components);
+            button1 = new Button();
             pnlHeader.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pbLogo).BeginInit();
             pnlMenu.SuspendLayout();
@@ -111,7 +112,7 @@ namespace xbd.WarehouseTHPro
             btnUserManage.ForeColor = Color.White;
             btnUserManage.Image = (Image)resources.GetObject("btnUserManage.Image");
             btnUserManage.ImageAlign = ContentAlignment.MiddleLeft;
-            btnUserManage.Location = new Point(0, 564);
+            btnUserManage.Location = new Point(0, 470);
             btnUserManage.Name = "btnUserManage";
             btnUserManage.Padding = new Padding(32, 0, 0, 0);
             btnUserManage.Size = new Size(215, 94);
@@ -233,6 +234,7 @@ namespace xbd.WarehouseTHPro
             // pnlFooter
             // 
             pnlFooter.BackColor = Color.FromArgb(43, 50, 120);
+            pnlFooter.Controls.Add(button1);
             pnlFooter.Controls.Add(lblSystemTime);
             pnlFooter.Controls.Add(lblLoginUser);
             pnlFooter.Controls.Add(lblSeparator2);
@@ -308,6 +310,17 @@ namespace xbd.WarehouseTHPro
             timer1.Interval = 200;
             timer1.Tick += timer1_Tick;
             // 
+            // button1
+            //
+            button1.FlatStyle = FlatStyle.System;
+            button1.Location = new Point(985, 11);
+            button1.Name = "button1";
+            button1.Size = new Size(94, 29);
+            button1.TabIndex = 5;
+            button1.Text = "退出登录";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
+            //
             // FrmMain
             // 
             AutoScaleDimensions = new SizeF(9F, 20F);
@@ -351,5 +364,6 @@ namespace xbd.WarehouseTHPro
         private System.Windows.Forms.Label lblSeparator2;
         private System.Windows.Forms.Label lblSystemTime;
         private System.Windows.Forms.Timer timer1;
+        private Button button1;
     }
 }

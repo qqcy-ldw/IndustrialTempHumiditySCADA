@@ -11,7 +11,14 @@ namespace xbd.WarehouseTHPro
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new FrmMain());
+
+            using FrmLogin loginForm = new FrmLogin();
+            if (loginForm.ShowDialog() != DialogResult.OK || loginForm.LoginUser is null)
+            {
+                return;
+            }
+
+            Application.Run(new FrmMain(loginForm.LoginUser));
         }
     }
 }
